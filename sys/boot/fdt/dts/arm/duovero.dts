@@ -40,7 +40,10 @@
 
 	aliases {
 		soc = &SOC;
+		uart1 = &uart1;
+		uart2 = &uart2;
 		uart3 = &uart3;
+		uart4 = &uart4;
 	};
 
 	memory {
@@ -88,25 +91,55 @@
 			interrupt-parent = < &GIC >;
 		};
 
-		uart2: serial@4806c000 {
-			compatible = "ns16550";
-			reg = <0x4806c000 0x400>;	/* table 23-165 */
-			reg-shift = <2>;
-			interrupts = < 105 >;		/* table 17-2, MA_IRQ_73 + 32 */
-			interrupt-parent = <&GIC>;
-			clock-frequency = < 48000000 >;
-		};
-		
+		/*
+		 * References for uart values
+		 * reg: table 23-165
+		 * interrupts: table 17-2, MA_IRQ_XX + 32, why 32?
+		 * clock-frequency: section 23.3.1.1
+		 */
+
 		uart3: serial@48020000 {
-			compatible = "ns16550";
+			compatible = "ti,ns16550";
 			reg = <0x48020000 0x400>;
 			reg-shift = <2>;
 			interrupts = < 106 >;
 			interrupt-parent = <&GIC>;
-			clock-frequency = < 48000000 >; /* 48Mhz clock for all uarts */
-							/* (techref 17.3.1.1) */
+			clock-frequency = <48000000>;
+			uart-device-id = <2>;
+		};
+
+		uart1: serial@4806a000 {
+			compatible = "ti,ns16550";
+			reg = <0x4806a000 0x400>;
+			reg-shift = <2>;
+			interrupts = < 104 >;
+			interrupt-parent = <&GIC>;
+			clock-frequency = <48000000>;
+			uart-device-id = <0>;
+			status = "disabled";
+		};
+
+		uart2: serial@4806c000 {
+			compatible = "ti,ns16550";
+			reg = <0x4806c000 0x400>;
+			reg-shift = <2>;
+			interrupts = < 105 >;
+			interrupt-parent = <&GIC>;
+			clock-frequency = <48000000>;
+			uart-device-id = <1>;
 		};
 		
+		uart4: serial@4806e000 {
+			compatible = "ti,ns16550";
+			reg = <0x4806e000 0x400>;
+			reg-shift = <2>;
+			interrupts = < 102 >;
+			interrupt-parent = <&GIC>;
+			clock-frequency = <48000000>;
+			uart-device-id = <3>;
+			status = "disabled";
+		};
+
 		scm@4a100000 {
 			compatible = "ti,scm";
 			reg =	< 0x4a100000 0x1000 >;
@@ -163,38 +196,59 @@
 			interrupt-parent = <&GIC>;
 		};
 
-		i2c1: i2c@x48070000 {
+		/*
+		 * References for i2c values
+		 * reg: table 23-30
+		 * interrupts: table 17-2, MA_IRQ_XX + 32, why 32?
+		 */
+
+		i2c1: i2c@48070000 {
 			compatible = "ti,i2c";
-			reg =<	0x48070000 0x100 >;
+			reg = <	0x48070000 0x100 >;
 			interrupts = <88>;
 			interrupt-parent = <&GIC>;
 			i2c-device-id = <1>;
 		};
 
-		i2c2: i2c@x48072000 {
+		i2c2: i2c@48072000 {
 			compatible = "ti,i2c";
-			reg =<	0x48072000 0x100 >;	/* table 23-30 */
-			interrupts = <89>; 		/* table 17-2, MA_IRQ_57 + 32 */
+			reg = <	0x48072000 0x100 >;
+			interrupts = <89>;
 			interrupt-parent = <&GIC>;
 			i2c-device-id = <2>;
 		};
 
+		i2c3: i2c@48060000 {
+			compatible = "ti,i2c";
+			reg = <	0x48060000 0x100 >;
+			interrupts = <93>;
+			interrupt-parent = <&GIC>;
+			i2c-device-id = <3>;
+		};
+
+		i2c4: i2c@48350000 {
+			compatible = "ti,i2c";
+			reg = <	0x48350000 0x100 >;
+			interrupts = <95>;
+			interrupt-parent = <&GIC>;
+			i2c-device-id = <4>;
+		};
+
 		sdma@x48070000 {
 			compatible = "ti,sdma";
-			reg =<	0x4A056000 0x1000 >;
+			reg = <	0x4A056000 0x1000 >;
 			interrupts = <44 45 46 47>;
 			interrupt-parent = <&GIC>;
 		};
 
 		mmc@x4809C000 {
 			compatible = "ti,mmchs";
-			reg =<0x4809C000 0x1000 >;
+			reg = <0x4809C000 0x1000 >;
 			interrupts = <115>;
 			interrupt-parent = <&GIC>;
 			mmchs-device-id = <1>;
-			non-removable; /* XXX need real solution */
+			non-removable;
 		};
-
 	};
 
 	chosen {
