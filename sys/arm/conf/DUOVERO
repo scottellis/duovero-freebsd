@@ -142,6 +142,8 @@ device		miibus
 device         rum                     # Ralink Technology RT2501USB wireless NICs
 device         urtwn                   # Realtek RTL8188CU/RTL8188EU/RTL8192CU
 device         urtwnfw
+device         rsu                     # Realtek RTL8188SU/RTL8192SU
+device         rsufw
 device         firmware
 
 # Wireless NIC cards
