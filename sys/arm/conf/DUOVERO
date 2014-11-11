@@ -26,14 +26,14 @@ ident		DUOVERO
 
 hints		"DUOVERO.hints"
 
-include 	"../ti/omap4/pandaboard/std.pandaboard"
+include 	"../ti/omap4/duovero/std.duovero"
 
 #To statically compile in device wiring instead of /boot/device.hints
 makeoptions	MODULES_OVERRIDE=""
 makeoptions WITHOUT_MODULES="ahc"
 
 options 	HZ=100
-options 	SCHED_4BSD		# 4BSD scheduler
+options 	SCHED_ULE		# ULE scheduler
 options 	INET			# InterNETworking
 options 	INET6			# IPv6 communications protocols
 options 	FFS			# Berkeley Fast Filesystem
@@ -44,7 +44,7 @@ options 	GEOM_PART_BSD		# BSD partition scheme
 options 	GEOM_PART_MBR		# MBR partition scheme
 options 	TMPFS			# Efficient memory filesystem
 options 	MSDOSFS			# MSDOS Filesystem
-options 	CD9660			# ISO 9660 Filesystem
+#options 	CD9660			# ISO 9660 Filesystem
 options 	PROCFS			# Process filesystem (requires PSEUDOFS)
 options 	PSEUDOFS		# Pseudo-filesystem framework
 options 	COMPAT_43		# Compatible with BSD 4.3 [KEEP THIS!]
@@ -74,10 +74,10 @@ options 	DDB			# Enable the kernel debugger
 #options 	DIAGNOSTIC
 
 # NFS support
-options 	NFSCL
+#options 	NFSCL
 
 # NFS root
-options 	NFS_ROOT		# NFS usable as /, requires NFSCLIENT
+#options 	NFS_ROOT		# NFS usable as /, requires NFSCLIENT
 #options 	BOOTP_NFSROOT
 #options 	BOOTP_COMPAT
 #options 	BOOTP
@@ -119,7 +119,7 @@ options 	USB_HOST_ALIGN=64	# Align usb buffers to cache line size.
 options 	USB_DEBUG
 #options 	USB_REQ_DEBUG
 #options 	USB_VERBOSE
-device		ohci
+#device		ohci
 device		ehci
 device		umass
 device		scbus			# SCSI bus (required for ATA/SCSI)
@@ -138,6 +138,18 @@ device		miibus
 #device		axe			# ASIX Electronics USB Ethernet
 #device		smsc			# SMSC LAN95xx USB Ethernet
 
+# USB Wireless
+device         rum                     # Ralink Technology RT2501USB wireless NICs
+device         urtwn                   # Realtek RTL8188CU/RTL8188EU/RTL8192CU
+device         urtwnfw
+device         firmware
+
+# Wireless NIC cards
+device         wlan                    # 802.11 support
+device         wlan_wep                # 802.11 WEP support
+device         wlan_ccmp               # 802.11 CCMP support
+device         wlan_tkip               # 802.11 TKIP support
+device         wlan_amrr               # AMRR transmit rate control algorithm
 
 # OMAP-specific devices
 device		ti_sdma
