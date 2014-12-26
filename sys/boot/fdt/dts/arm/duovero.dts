@@ -186,7 +186,7 @@
 			 * reset indicates (if non-zero) if port reset is required 
 			 * gpio_pin - GPIO pin that is used to perform reset
 			 */
-			phy-config = <  1 0 0
+			phy-config = <  1 1 62
 					0 0 0
 					0 0 0>;
 			reg = < 0x4a064c00 0x100	/* EHCI regs */
