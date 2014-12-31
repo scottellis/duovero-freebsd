@@ -1,14 +1,14 @@
-From 989ef6c75520ac14bfaa1de367e0686bf505f5cb Mon Sep 17 00:00:00 2001
+From f8b0015096da2fb5040569a160c670b6a5c999e1 Mon Sep 17 00:00:00 2001
 From: Scott Ellis <scott@jumpnowtek.com>
-Date: Wed, 31 Dec 2014 08:04:22 -0500
-Subject: [PATCH] omap4: prcm: Use defined constants in reset function
+Date: Wed, 31 Dec 2014 08:54:11 -0500
+Subject: [PATCH] omap4: prcm: use defined constants in reset function
 
 ---
- sys/arm/ti/omap4/omap4_prcm_clks.c | 24 ++++++++++++++++++------
- 1 file changed, 18 insertions(+), 6 deletions(-)
+ sys/arm/ti/omap4/omap4_prcm_clks.c | 27 +++++++++++++++++++++------
+ 1 file changed, 21 insertions(+), 6 deletions(-)
 
 diff --git a/sys/arm/ti/omap4/omap4_prcm_clks.c b/sys/arm/ti/omap4/omap4_prcm_clks.c
-index 564fa9f..ec761ac 100644
+index 4eeb5da..1994a23 100644
 --- a/sys/arm/ti/omap4/omap4_prcm_clks.c
 +++ b/sys/arm/ti/omap4/omap4_prcm_clks.c
 @@ -135,6 +135,10 @@ __FBSDID("$FreeBSD: head/sys/arm/ti/omap4/omap4_prcm_clks.c 266648 2014-05-25 10
@@ -22,7 +22,7 @@ index 564fa9f..ec761ac 100644
  /**
   *	Address offsets from the SCRM memory region to the top level clock control
   *	registers. More registers are available.
-@@ -1570,16 +1574,24 @@ omap4_clk_aux_get_source_freq(struct ti_clock_dev *clkdev,
+@@ -1585,16 +1589,27 @@ omap4_clk_aux_get_source_freq(struct ti_clock_dev *clkdev,
  	return (38400000 / divider);
  }
  
@@ -39,9 +39,12 @@ index 564fa9f..ec761ac 100644
 +	struct resource *mem_res;
 +	uint32_t reg;
 +
++	if (sc == NULL)
++		return;
++
 +	mem_res = sc->sc_res[PRM_INSTANCE_MEM_REGION];
 +
-+	if (!mem_res)
++	if (mem_res == NULL)
 +		return;
 +
 +	reg = bus_read_4(mem_res, PRM_RSTCTRL_OFFSET);
