@@ -1,0 +1,73 @@
+From e30b5b3f3486b8a2b079c9bd387162cb600aa730 Mon Sep 17 00:00:00 2001
+From: Scott Ellis <scott@jumpnowtek.com>
+Date: Tue, 30 Dec 2014 14:56:38 -0500
+Subject: [PATCH] pandaboard: usb: let ehci driver initialize usb phy
+
+---
+ sys/arm/conf/PANDABOARD             |  2 +-
+ sys/arm/ti/usb/omap_ehci.c          |  1 +
+ sys/boot/fdt/dts/arm/pandaboard.dts | 15 ++++++++++-----
+ 3 files changed, 12 insertions(+), 6 deletions(-)
+
+diff --git a/sys/arm/conf/PANDABOARD b/sys/arm/conf/PANDABOARD
+index 51cee25..84e8f0a 100644
+--- a/sys/arm/conf/PANDABOARD
++++ b/sys/arm/conf/PANDABOARD
+@@ -27,7 +27,7 @@ ident		PANDABOARD
+ 
+ hints		"PANDABOARD.hints"
+ 
+-include 	"../ti/omap4/pandaboard/std.pandaboard"
++include 	"../ti/omap4/std.omap4"
+ 
+ makeoptions	MODULES_OVERRIDE=""
+ makeoptions	WITHOUT_MODULES="ahc"
+diff --git a/sys/arm/ti/usb/omap_ehci.c b/sys/arm/ti/usb/omap_ehci.c
+index e9f080f..cfeb242 100644
+--- a/sys/arm/ti/usb/omap_ehci.c
++++ b/sys/arm/ti/usb/omap_ehci.c
+@@ -429,6 +429,7 @@ omap_ehci_init(struct omap_ehci_softc *isc)
+ 			if (isc->port_mode[0] == EHCI_HCD_OMAP_MODE_PHY) {
+ 				ti_prcm_clk_set_source(USBP1_PHY_CLK, EXT_CLK);
+ 				ti_prcm_clk_enable(USBP1_PHY_CLK);
++				ti_prcm_clk_enable(AUX3_CLK);
+ 			} else if (isc->port_mode[0] == EHCI_HCD_OMAP_MODE_TLL)
+ 				ti_prcm_clk_enable(USBP1_UTMI_CLK);
+ 			else if (isc->port_mode[0] == EHCI_HCD_OMAP_MODE_HSIC)
+diff --git a/sys/boot/fdt/dts/arm/pandaboard.dts b/sys/boot/fdt/dts/arm/pandaboard.dts
+index a4303ad..7a2fa31 100644
+--- a/sys/boot/fdt/dts/arm/pandaboard.dts
++++ b/sys/boot/fdt/dts/arm/pandaboard.dts
+@@ -134,7 +134,11 @@
+ 		ehci {
+ 			compatible = "ti,usb-ehci", "usb-ehci";
+ 			/* 
+-			 * USB port PHY configuration is a tuple: <mode, reset, gpio_pin>
++	                 * USB port PHY configuration is a tuple consisting of either
++	                 * <mode, reset, gpio_pin>
++	                 * or
++	                 * <mode, reset, gpio_pin1, gpio_pin2>
++	                 *
+ 			 * mode is one of the following values:
+ 			 *   0 - unknown
+ 			 *   1 - PHY
+@@ -142,11 +146,12 @@
+ 			 *   3 - HSIC
+ 			 *
+ 			 * reset indicates (if non-zero) if port reset is required 
+-			 * gpio_pin - GPIO pin that is used to perform reset
++			 * gpio_pin - GPIO pin(s) that is used to perform reset
++	                 * the pandaboard uses 2 reset pins
+ 			 */
+-			phy-config = <  1 0 0
+-					0 0 0
+-					0 0 0>;
++			phy-config = < 1 1 62 1
++	                               0 0 0 0
++	                               0 0 0 0 >;
+ 			reg = < 0x4a064c00 0x100	/* EHCI regs */
+ 				0x4a064000 0x700	/* UHH regs */
+ 				0x4a062000 0x1000>;	/* TLL regs */
+-- 
+2.1.2
+

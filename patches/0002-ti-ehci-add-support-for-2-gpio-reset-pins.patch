@@ -1,0 +1,142 @@
+From da5c8e280eee52181a8d380cdedf5741ec65588a Mon Sep 17 00:00:00 2001
+From: Scott Ellis <scott@jumpnowtek.com>
+Date: Wed, 31 Dec 2014 05:19:34 -0500
+Subject: [PATCH] ti: ehci: add support for 2 gpio reset pins
+
+---
+ sys/arm/ti/usb/omap_ehci.c | 66 ++++++++++++++++++++++++++++------------------
+ 1 file changed, 41 insertions(+), 25 deletions(-)
+
+diff --git a/sys/arm/ti/usb/omap_ehci.c b/sys/arm/ti/usb/omap_ehci.c
+index d449bbb..2f35577 100644
+--- a/sys/arm/ti/usb/omap_ehci.c
++++ b/sys/arm/ti/usb/omap_ehci.c
+@@ -124,7 +124,7 @@ struct omap_ehci_softc {
+ 	/* The following details are provided by conf hints */
+ 	int                 port_mode[3];
+ 	int                 phy_reset[3];
+-	int                 reset_gpio_pin[3];
++	int                 reset_gpio[3][2];
+ };
+ 
+ static device_attach_t omap_ehci_attach;
+@@ -345,7 +345,7 @@ omap_ehci_init(struct omap_ehci_softc *isc)
+ 	uint8_t tll_ch_mask = 0;
+ 	uint32_t reg = 0;
+ 	int reset_performed = 0;
+-	int i;
++	int i, j;
+ 	
+ 	device_printf(isc->sc_dev, "Starting TI EHCI USB Controller\n");
+ 	
+@@ -354,14 +354,20 @@ omap_ehci_init(struct omap_ehci_softc *isc)
+ 	ti_prcm_clk_enable(USBHSHOST_CLK);
+ 	
+ 	/* Hold the PHY in reset while configuring */
+-	for (int i = 0; i < 3; i++) {
+-		if (isc->phy_reset[i]) {
+-			/* Configure the GPIO to drive low (hold in reset) */
+-			if ((isc->reset_gpio_pin[i] != -1) && (isc->sc_gpio_dev != NULL)) {
+-				GPIO_PIN_SETFLAGS(isc->sc_gpio_dev, isc->reset_gpio_pin[i],
+-				    GPIO_PIN_OUTPUT);
+-				GPIO_PIN_SET(isc->sc_gpio_dev, isc->reset_gpio_pin[i],
+-				    GPIO_PIN_LOW);
++	for (i = 0; i < 3; i++) {
++		/* Configure the GPIO to drive low (hold in reset) */
++		if (!isc->phy_reset[i])
++			continue;
++
++		for (j = 0; j < 2; j++) {
++			if ((isc->reset_gpio[i][j] != -1)) {
++				GPIO_PIN_SETFLAGS(isc->sc_gpio_dev,
++					isc->reset_gpio[i][j],
++					GPIO_PIN_OUTPUT);
++				GPIO_PIN_SET(isc->sc_gpio_dev,
++					isc->reset_gpio[i][j],
++					GPIO_PIN_LOW);
++
+ 				reset_performed = 1;
+ 			}
+ 		}
+@@ -541,12 +547,15 @@ omap_ehci_init(struct omap_ehci_softc *isc)
+ 		DELAY(10000);
+ 		
+ 		for (i = 0; i < 3; i++) {
+-			/* Release reset */
+-	
+-			if (isc->phy_reset[i] && (isc->reset_gpio_pin[i] != -1) 
+-			    && (isc->sc_gpio_dev != NULL)) {
+-				GPIO_PIN_SET(isc->sc_gpio_dev, 
+-					isc->reset_gpio_pin[i], GPIO_PIN_HIGH);
++			if (!isc->phy_reset[i])
++				continue;
++
++			for (j = 0; j < 2; j++) {
++				if (isc->reset_gpio[i][j] != -1) {
++					GPIO_PIN_SET(isc->sc_gpio_dev,
++						isc->reset_gpio[i][j],
++						GPIO_PIN_HIGH);
++				}
+ 			}
+ 		}
+ 	}
+@@ -767,14 +776,14 @@ omap_ehci_attach(device_t dev)
+ {
+ 	struct omap_ehci_softc *isc = device_get_softc(dev);
+ 	phandle_t node;
+-	/* 3 ports with 3 cells per port */
+-	pcell_t phyconf[3 * 3];
++	/* 3 ports with 4 cells per port */
++	pcell_t phyconf[3 * 4];
+ 	pcell_t *phyconf_ptr;
+ 	ehci_softc_t *sc = &isc->base;
+ 	int err;
+ 	int rid;
+ 	int len, tuple_size;
+-	int i;
++	int i, j;
+ 
+ 	/* initialise some bus fields */
+ 	sc->sc_bus.parent = dev;
+@@ -856,25 +865,32 @@ omap_ehci_attach(device_t dev)
+ 	for (i = 0; i < 3; i++) {
+ 		isc->phy_reset[i] = 0;
+ 		isc->port_mode[i] = EHCI_HCD_OMAP_MODE_UNKNOWN;
+-		isc->reset_gpio_pin[i] = -1;
++
++		for (j = 0; j < 2; j++)
++			isc->reset_gpio[i][j] = -1;
+ 	}
+ 
+-	tuple_size = sizeof(pcell_t) * 3;
+ 	node = ofw_bus_get_node(dev);
+ 	len = OF_getprop(node, "phy-config", phyconf, sizeof(phyconf));
+ 	if (len > 0) {
+-		if (len % tuple_size)
++		if (len % 3)
+ 			goto error;
+-		if ((len / tuple_size) != 3)
++
++		tuple_size = len / (3 * sizeof(pcell_t));
++
++		if (tuple_size < 3 || tuple_size > 4)
+ 			goto error;
+ 
+ 		phyconf_ptr = phyconf;
+ 		for (i = 0; i < 3; i++) {
+ 			isc->port_mode[i] = fdt32_to_cpu(*phyconf_ptr);
+ 			isc->phy_reset[i] = fdt32_to_cpu(*(phyconf_ptr + 1));
+-			isc->reset_gpio_pin[i] = fdt32_to_cpu(*(phyconf_ptr + 2));
++			isc->reset_gpio[i][0] = fdt32_to_cpu(*(phyconf_ptr + 2));
++
++			if (tuple_size == 4)
++				isc->reset_gpio[i][1] = fdt32_to_cpu(*(phyconf_ptr + 3));
+ 
+-			phyconf_ptr += 3;
++			phyconf_ptr += tuple_size;
+ 		}
+ 	}
+ 	
+-- 
+2.1.2
+

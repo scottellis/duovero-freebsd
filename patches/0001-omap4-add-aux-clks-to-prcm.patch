@@ -1,0 +1,352 @@
+From 62d986bf8518eda9a7f696cf0f4537a90ef8258e Mon Sep 17 00:00:00 2001
+From: Scott Ellis <scott@jumpnowtek.com>
+Date: Wed, 31 Dec 2014 05:01:21 -0500
+Subject: [PATCH] omap4: add aux clks to prcm
+
+---
+ sys/arm/ti/omap4/omap4_prcm_clks.c  | 236 +++++++++++++++++++++++++++++++++++-
+ sys/arm/ti/ti_prcm.h                |   8 ++
+ sys/boot/fdt/dts/arm/pandaboard.dts |   9 +-
+ 3 files changed, 248 insertions(+), 5 deletions(-)
+
+diff --git a/sys/arm/ti/omap4/omap4_prcm_clks.c b/sys/arm/ti/omap4/omap4_prcm_clks.c
+index de0eff6..564fa9f 100644
+--- a/sys/arm/ti/omap4/omap4_prcm_clks.c
++++ b/sys/arm/ti/omap4/omap4_prcm_clks.c
+@@ -99,11 +99,13 @@ __FBSDID("$FreeBSD: head/sys/arm/ti/omap4/omap4_prcm_clks.c 266648 2014-05-25 10
+  *	   PRM Instance -  0x4A30 6000 : 0x4A30 8000
+  *	   CM1 Instance -  0x4A00 4000 : 0x4A00 5000
+  *	   CM2 Instance -  0x4A00 8000 : 0x4A00 A000
++ *	  SCRM Instance -  0x4A30 A000 : 0x4A30 A600
+  *
+  */
+ #define PRM_INSTANCE_MEM_REGION    0
+ #define CM1_INSTANCE_MEM_REGION    1
+ #define CM2_INSTANCE_MEM_REGION    2
++#define SCRM_INSTANCE_MEM_REGION   3
+ 
+ /**
+  *	Address offsets from the PRM memory region to the top level clock control
+@@ -134,6 +136,24 @@ __FBSDID("$FreeBSD: head/sys/arm/ti/omap4/omap4_prcm_clks.c 266648 2014-05-25 10
+ #define CM_SYS_CLKSEL_OFFSET           (CKGEN_PRM_OFFSET + 0x0010UL)
+ 
+ /**
++ *	Address offsets from the SCRM memory region to the top level clock control
++ *	registers. More registers are available.
++ */
++#define AUXCLK0_OFFSET                 0x00000310UL
++#define AUXCLK1_OFFSET                 0x00000314UL
++#define AUXCLK2_OFFSET                 0x00000318UL
++#define AUXCLK3_OFFSET                 0x0000031CUL
++#define AUXCLK4_OFFSET                 0x00000320UL
++#define AUXCLK5_OFFSET                 0x00000324UL
++
++#define AUXCLK_ENABLE_BIT               (1 << 8)
++#define AUXCLK_SRCSELECT_MASK           (3 << 1)
++#define AUXCLK_SRCSELECT_SYSTEM         (0 << 1)
++#define AUXCLK_SRCSELECT_CORE           (1 << 1)
++#define AUXCLK_SRCSELECT_PERDPLL        (2 << 1)
++#define AUXCLK_SRCSELECT_ALT            (3 << 1)
++
++/**
+  *	Address offsets from the CM1 memory region to the top level clock control
+  *	registers.
+  */
+@@ -178,11 +198,12 @@ static struct resource_spec omap4_scm_res_spec[] = {
+ 	{ SYS_RES_MEMORY,	0,	RF_ACTIVE },	/* Control memory window */
+ 	{ SYS_RES_MEMORY,	1,	RF_ACTIVE },	/* Control memory window */
+ 	{ SYS_RES_MEMORY,	2,	RF_ACTIVE },	/* Control memory window */
++	{ SYS_RES_MEMORY,	3,	RF_ACTIVE },	/* Control memory window */
+ 	{ -1, 0 }
+ };
+ 
+ struct omap4_prcm_softc {
+-	struct resource	*sc_res[3];
++	struct resource	*sc_res[4];
+ };
+ 
+ static struct omap4_prcm_softc *omap4_prcm_sc;
+@@ -204,6 +225,12 @@ static int omap4_clk_hsusbhost_activate(struct ti_clock_dev *clkdev);
+ static int omap4_clk_hsusbhost_deactivate(struct ti_clock_dev *clkdev);
+ static int omap4_clk_hsusbhost_accessible(struct ti_clock_dev *clkdev);
+ 
++static int omap4_clk_aux_activate(struct ti_clock_dev *clkdev);
++static int omap4_clk_aux_deactivate(struct ti_clock_dev *clkdev);
++static int omap4_clk_aux_accessible(struct ti_clock_dev *clkdev);
++static int omap4_clk_aux_set_source(struct ti_clock_dev *clkdev, clk_src_t clksrc);
++static int omap4_clk_aux_get_source_freq(struct ti_clock_dev *clkdev, unsigned int *freq);
++
+ static int omap4_clk_get_sysclk_freq(struct ti_clock_dev *clkdev, unsigned int *freq);
+ static int omap4_clk_get_arm_fclk_freq(struct ti_clock_dev *clkdev, unsigned int *freq);
+ 
+@@ -255,6 +282,14 @@ static int omap4_clk_get_arm_fclk_freq(struct ti_clock_dev *clkdev, unsigned int
+ 		.clk_get_source_freq = NULL \
+ 	}
+ 
++#define OMAP4_AUX_CLOCK_DEV(i) \
++	{	.id = (i), \
++		.clk_activate = omap4_clk_aux_activate, \
++		.clk_deactivate = omap4_clk_aux_deactivate, \
++		.clk_set_source = omap4_clk_aux_set_source, \
++		.clk_accessible = omap4_clk_aux_accessible, \
++		.clk_get_source_freq = omap4_clk_aux_get_source_freq \
++	}
+ 
+ struct ti_clock_dev ti_omap4_clk_devmap[] = {
+ 
+@@ -330,6 +365,14 @@ struct ti_clock_dev ti_omap4_clk_devmap[] = {
+ 	OMAP4_GENERIC_CLOCK_DEV(I2C3_CLK),
+ 	OMAP4_GENERIC_CLOCK_DEV(I2C4_CLK),
+ 
++	/* Auxiliary clocks */
++	OMAP4_AUX_CLOCK_DEV(AUX0_CLK),
++	OMAP4_AUX_CLOCK_DEV(AUX1_CLK),
++	OMAP4_AUX_CLOCK_DEV(AUX2_CLK),
++	OMAP4_AUX_CLOCK_DEV(AUX3_CLK),
++	OMAP4_AUX_CLOCK_DEV(AUX4_CLK),
++	OMAP4_AUX_CLOCK_DEV(AUX5_CLK),
++
+ 	{  INVALID_CLK_IDENT, NULL, NULL, NULL, NULL }
+ };
+ 
+@@ -1336,6 +1379,197 @@ omap4_clk_hsusbhost_set_source(struct ti_clock_dev *clkdev,
+ 	return (0);
+ }
+ 
++static int
++omap4_clk_aux_get_offset(clk_ident_t id)
++{
++	int offset;
++
++	switch (id) {
++	case AUX0_CLK:
++		offset = AUXCLK0_OFFSET;
++		break;
++	case AUX1_CLK:
++		offset = AUXCLK1_OFFSET;
++		break;
++	case AUX2_CLK:
++		offset = AUXCLK2_OFFSET;
++		break;
++	case AUX3_CLK:
++		offset = AUXCLK3_OFFSET;
++		break;
++	case AUX4_CLK:
++		offset = AUXCLK4_OFFSET;
++		break;
++	case AUX5_CLK:
++		offset = AUXCLK5_OFFSET;
++		break;
++	default:
++		offset = -1;
++		break;
++	}
++
++	return (offset);
++}
++
++static int
++omap4_clk_aux_activate(struct ti_clock_dev *clkdev)
++{
++	struct omap4_prcm_softc *sc = omap4_prcm_sc;
++	struct resource *clk_mem_res;
++	int clksel_reg_off;
++	uint32_t clksel;
++
++	clk_mem_res = sc->sc_res[SCRM_INSTANCE_MEM_REGION];
++
++	if (clk_mem_res == NULL)
++		return (ENXIO);
++
++	clksel_reg_off = omap4_clk_aux_get_offset(clkdev->id);
++
++	if (clksel_reg_off < 0)
++		return (EINVAL);
++
++	/*
++	 * Use system clock divided by two = 19.2MHz
++	 * Need an interface that allows more configuration.
++	 */
++	clksel = AUXCLK_ENABLE_BIT | AUXCLK_SRCSELECT_SYSTEM |
++		(1 << 16);
++
++	bus_write_4(clk_mem_res, clksel_reg_off, clksel);
++
++	return (0);
++}
++
++static int
++omap4_clk_aux_deactivate(struct ti_clock_dev *clkdev)
++{
++	struct omap4_prcm_softc *sc = omap4_prcm_sc;
++	struct resource *clk_mem_res;
++	int clksel_reg_off;
++	uint32_t clksel;
++
++	clk_mem_res = sc->sc_res[SCRM_INSTANCE_MEM_REGION];
++
++	if (clk_mem_res == NULL)
++		return (ENXIO);
++
++	clksel_reg_off = omap4_clk_aux_get_offset(clkdev->id);
++
++	if (clksel_reg_off < 0)
++		return (EINVAL);
++
++	clksel = bus_read_4(clk_mem_res, clksel_reg_off);
++
++	clksel &= ~(AUXCLK_ENABLE_BIT);
++
++	bus_write_4(clk_mem_res, clksel_reg_off, clksel);
++
++	return (0);
++}
++
++/*
++ * This is a stub.
++ * Currently the clk_src_t type doesn't provide all of the options
++ * possible for an AUX clock source.
++ * Only SYSCLK is allowed for now.
++ */
++static int
++omap4_clk_aux_set_source(struct ti_clock_dev *clkdev,
++                          clk_src_t clksrc)
++{
++	struct omap4_prcm_softc *sc = omap4_prcm_sc;
++	struct resource *clk_mem_res;
++	int clksel_reg_off;
++	uint32_t clksel;
++
++	clk_mem_res = sc->sc_res[SCRM_INSTANCE_MEM_REGION];
++
++	if (clk_mem_res == NULL)
++		return (ENXIO);
++
++	clksel_reg_off = omap4_clk_aux_get_offset(clkdev->id);
++
++	if (clksel_reg_off < 0)
++		return (EINVAL);
++
++	clksel = bus_read_4(clk_mem_res, clksel_reg_off);
++	clksel &= ~AUXCLK_SRCSELECT_MASK;
++
++	switch (clksrc) {
++	case SYSCLK_CLK:
++		clksel |= AUXCLK_SRCSELECT_SYSTEM;
++		break;
++
++	default:
++		return (EINVAL);
++	}
++
++	bus_write_4(clk_mem_res, clksel_reg_off, clksel);
++
++	return (0);
++}
++
++static int
++omap4_clk_aux_accessible(struct ti_clock_dev *clkdev)
++{
++	struct omap4_prcm_softc *sc = omap4_prcm_sc;
++	struct resource *clk_mem_res;
++	int clksel_reg_off;
++	uint32_t clksel;
++
++	clk_mem_res = sc->sc_res[SCRM_INSTANCE_MEM_REGION];
++
++	if (clk_mem_res == NULL)
++		return (ENXIO);
++
++	clksel_reg_off = omap4_clk_aux_get_offset(clkdev->id);
++
++	if (clksel_reg_off < 0)
++		return (EINVAL);
++
++	clksel = bus_read_4(clk_mem_res, clksel_reg_off);
++
++	return (clksel & AUXCLK_ENABLE_BIT);
++}
++
++/*
++ * This is a stub.
++ * Currently it assumes a SYSCLK clock running at 38.4MHz
++ * for the AUX clock source.
++ * A real implementation needs to determine the source clock
++ * and then find it's frequency.
++ */
++static int
++omap4_clk_aux_get_source_freq(struct ti_clock_dev *clkdev,
++                              unsigned int *freq)
++{
++	struct omap4_prcm_softc *sc = omap4_prcm_sc;
++	struct resource *clk_mem_res;
++	int clksel_reg_off;
++	uint32_t clksel;
++	uint32_t divider;
++
++	if (freq == NULL)
++		return (EINVAL);
++
++	clk_mem_res = sc->sc_res[SCRM_INSTANCE_MEM_REGION];
++
++	if (clk_mem_res == NULL)
++		return (ENXIO);
++
++	clksel_reg_off = omap4_clk_aux_get_offset(clkdev->id);
++
++	if (clksel_reg_off < 0)
++		return (EINVAL);
++
++	clksel = bus_read_4(clk_mem_res, clksel_reg_off);
++
++	divider = 1 + (0xffff & (clksel >> 16));
++
++	return (38400000 / divider);
++}
++
+ #define PRM_RSTCTRL		0x1b00
+ #define PRM_RSTCTRL_RESET	0x2
+ 
+diff --git a/sys/arm/ti/ti_prcm.h b/sys/arm/ti/ti_prcm.h
+index 3309ea0..575d533 100644
+--- a/sys/arm/ti/ti_prcm.h
++++ b/sys/arm/ti/ti_prcm.h
+@@ -164,6 +164,14 @@ typedef enum {
+ 
+ 	TSC_ADC_CLK = 1800,
+ 
++	/* SRCRM auxiliary clocks */
++	AUX0_CLK = 1900,
++	AUX1_CLK,
++	AUX2_CLK,
++	AUX3_CLK,
++	AUX4_CLK,
++	AUX5_CLK,
++
+ 	INVALID_CLK_IDENT
+ 
+ } clk_ident_t;
+diff --git a/sys/boot/fdt/dts/arm/pandaboard.dts b/sys/boot/fdt/dts/arm/pandaboard.dts
+index c750b1d..a4303ad 100644
+--- a/sys/boot/fdt/dts/arm/pandaboard.dts
++++ b/sys/boot/fdt/dts/arm/pandaboard.dts
+@@ -66,11 +66,12 @@
+ 
+ 		omap4_prcm@4a306000 {
+ 	   		compatible = "ti,omap4_prcm";
+-   			reg =<  0x4a306000 0x2000
+-			    0x4a004000 0x1000
+-			    0x4a008000 0x8000>;
++			reg = < 0x4a306000 0x2000
++			        0x4a004000 0x1000
++			        0x4a008000 0x8000
++	                        0x4a30a000 0x0600 >;
+ 		};
+-				     
++
+ 		pl310@48242000 {
+ 			compatible = "arm,pl310";
+ 			reg = < 0x48242000 0x1000 >;
+-- 
+2.1.2
+
