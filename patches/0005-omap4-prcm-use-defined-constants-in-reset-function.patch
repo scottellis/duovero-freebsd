@@ -1,0 +1,58 @@
+From 989ef6c75520ac14bfaa1de367e0686bf505f5cb Mon Sep 17 00:00:00 2001
+From: Scott Ellis <scott@jumpnowtek.com>
+Date: Wed, 31 Dec 2014 08:04:22 -0500
+Subject: [PATCH] omap4: prcm: Use defined constants in reset function
+
+---
+ sys/arm/ti/omap4/omap4_prcm_clks.c | 24 ++++++++++++++++++------
+ 1 file changed, 18 insertions(+), 6 deletions(-)
+
+diff --git a/sys/arm/ti/omap4/omap4_prcm_clks.c b/sys/arm/ti/omap4/omap4_prcm_clks.c
+index 564fa9f..ec761ac 100644
+--- a/sys/arm/ti/omap4/omap4_prcm_clks.c
++++ b/sys/arm/ti/omap4/omap4_prcm_clks.c
+@@ -135,6 +135,10 @@ __FBSDID("$FreeBSD: head/sys/arm/ti/omap4/omap4_prcm_clks.c 266648 2014-05-25 10
+ #define CM_ABE_PLL_REF_CLKSEL_OFFSET   (CKGEN_PRM_OFFSET + 0x000CUL)
+ #define CM_SYS_CLKSEL_OFFSET           (CKGEN_PRM_OFFSET + 0x0010UL)
+ 
++#define PRM_RSTCTRL_OFFSET             0x00001B00UL
++#define PRM_RSTCTRL_RST_GLOBAL_WARM    0x000000001L
++#define PRM_RSTCTRL_RST_GLOBAL_COLD    0x000000002L
++
+ /**
+  *	Address offsets from the SCRM memory region to the top level clock control
+  *	registers. More registers are available.
+@@ -1570,16 +1574,24 @@ omap4_clk_aux_get_source_freq(struct ti_clock_dev *clkdev,
+ 	return (38400000 / divider);
+ }
+ 
+-#define PRM_RSTCTRL		0x1b00
+-#define PRM_RSTCTRL_RESET	0x2
+-
+ static void
+ omap4_prcm_reset(void)
+ {
+ 	struct omap4_prcm_softc *sc = omap4_prcm_sc;
+-	bus_write_4(sc->sc_res[0], PRM_RSTCTRL,
+-	    bus_read_4(sc->sc_res[0], PRM_RSTCTRL) | PRM_RSTCTRL_RESET);
+-	bus_read_4(sc->sc_res[0], PRM_RSTCTRL);
++	struct resource *mem_res;
++	uint32_t reg;
++
++	mem_res = sc->sc_res[PRM_INSTANCE_MEM_REGION];
++
++	if (!mem_res)
++		return;
++
++	reg = bus_read_4(mem_res, PRM_RSTCTRL_OFFSET);
++
++	bus_write_4(mem_res, PRM_RSTCTRL_OFFSET,
++		reg | PRM_RSTCTRL_RST_GLOBAL_COLD);
++
++	bus_read_4(mem_res, PRM_RSTCTRL_OFFSET);
+ }
+ 
+ /**
+-- 
+2.1.2
+
