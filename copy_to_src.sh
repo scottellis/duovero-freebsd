@@ -1,6 +1,6 @@
 #!/bin/sh
 
-FREEBSD_SRC=~/src-work
+FREEBSD_SRC=~/src-current
 
 GITDIR=`pwd`
 
