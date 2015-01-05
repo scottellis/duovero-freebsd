@@ -1,7 +1,7 @@
-From 8ea56609b286f9d63f457896442cbdb8f4f9c62b Mon Sep 17 00:00:00 2001
+From 24519ed6c683cd140383efc63df0cbc29e323526 Mon Sep 17 00:00:00 2001
 From: Scott Ellis <scott@jumpnowtek.com>
-Date: Wed, 31 Dec 2014 08:46:49 -0500
-Subject: [PATCH] omap4: add aux clks to prcm
+Date: Mon, 5 Jan 2015 07:56:05 -0500
+Subject: [PATCH 1/2] omap4: add aux clks to prcm
 
 ---
  sys/arm/ti/omap4/omap4_prcm_clks.c  | 251 +++++++++++++++++++++++++++++++++++-
@@ -9,10 +9,10 @@ Subject: [PATCH] omap4: add aux clks to prcm
  sys/boot/fdt/dts/arm/pandaboard.dts |   9 +-
  3 files changed, 263 insertions(+), 5 deletions(-)
 
-diff --git a/sys/arm/ti/omap4/omap4_prcm_clks.c b/sys/arm/ti/omap4/omap4_prcm_clks.c
+diff --git sys/arm/ti/omap4/omap4_prcm_clks.c sys/arm/ti/omap4/omap4_prcm_clks.c
 index de0eff6..4eeb5da 100644
---- a/sys/arm/ti/omap4/omap4_prcm_clks.c
-+++ b/sys/arm/ti/omap4/omap4_prcm_clks.c
+--- sys/arm/ti/omap4/omap4_prcm_clks.c
++++ sys/arm/ti/omap4/omap4_prcm_clks.c
 @@ -99,11 +99,13 @@ __FBSDID("$FreeBSD: head/sys/arm/ti/omap4/omap4_prcm_clks.c 266648 2014-05-25 10
   *	   PRM Instance -  0x4A30 6000 : 0x4A30 8000
   *	   CM1 Instance -  0x4A00 4000 : 0x4A00 5000
@@ -322,10 +322,10 @@ index de0eff6..4eeb5da 100644
  #define PRM_RSTCTRL		0x1b00
  #define PRM_RSTCTRL_RESET	0x2
  
-diff --git a/sys/arm/ti/ti_prcm.h b/sys/arm/ti/ti_prcm.h
+diff --git sys/arm/ti/ti_prcm.h sys/arm/ti/ti_prcm.h
 index 3309ea0..575d533 100644
---- a/sys/arm/ti/ti_prcm.h
-+++ b/sys/arm/ti/ti_prcm.h
+--- sys/arm/ti/ti_prcm.h
++++ sys/arm/ti/ti_prcm.h
 @@ -164,6 +164,14 @@ typedef enum {
  
  	TSC_ADC_CLK = 1800,
@@ -341,10 +341,10 @@ index 3309ea0..575d533 100644
  	INVALID_CLK_IDENT
  
  } clk_ident_t;
-diff --git a/sys/boot/fdt/dts/arm/pandaboard.dts b/sys/boot/fdt/dts/arm/pandaboard.dts
+diff --git sys/boot/fdt/dts/arm/pandaboard.dts sys/boot/fdt/dts/arm/pandaboard.dts
 index c750b1d..a4303ad 100644
---- a/sys/boot/fdt/dts/arm/pandaboard.dts
-+++ b/sys/boot/fdt/dts/arm/pandaboard.dts
+--- sys/boot/fdt/dts/arm/pandaboard.dts
++++ sys/boot/fdt/dts/arm/pandaboard.dts
 @@ -66,11 +66,12 @@
  
  		omap4_prcm@4a306000 {
@@ -362,6 +362,3 @@ index c750b1d..a4303ad 100644
  		pl310@48242000 {
  			compatible = "arm,pl310";
  			reg = < 0x48242000 0x1000 >;
--- 
-2.1.2
-

@@ -1,6 +1,6 @@
-From e30b5b3f3486b8a2b079c9bd387162cb600aa730 Mon Sep 17 00:00:00 2001
+From 76b13f56e3e15fa8f6043aa00fd061377659c5ca Mon Sep 17 00:00:00 2001
 From: Scott Ellis <scott@jumpnowtek.com>
-Date: Tue, 30 Dec 2014 14:56:38 -0500
+Date: Mon, 5 Jan 2015 08:04:43 -0500
 Subject: [PATCH] pandaboard: usb: let ehci driver initialize usb phy
 
 ---
@@ -9,10 +9,10 @@ Subject: [PATCH] pandaboard: usb: let ehci driver initialize usb phy
  sys/boot/fdt/dts/arm/pandaboard.dts | 15 ++++++++++-----
  3 files changed, 12 insertions(+), 6 deletions(-)
 
-diff --git a/sys/arm/conf/PANDABOARD b/sys/arm/conf/PANDABOARD
-index 51cee25..84e8f0a 100644
---- a/sys/arm/conf/PANDABOARD
-+++ b/sys/arm/conf/PANDABOARD
+diff --git sys/arm/conf/PANDABOARD sys/arm/conf/PANDABOARD
+index fb50ebd..62fb47a 100644
+--- sys/arm/conf/PANDABOARD
++++ sys/arm/conf/PANDABOARD
 @@ -27,7 +27,7 @@ ident		PANDABOARD
  
  hints		"PANDABOARD.hints"
@@ -22,11 +22,11 @@ index 51cee25..84e8f0a 100644
  
  makeoptions	MODULES_OVERRIDE=""
  makeoptions	WITHOUT_MODULES="ahc"
-diff --git a/sys/arm/ti/usb/omap_ehci.c b/sys/arm/ti/usb/omap_ehci.c
-index e9f080f..cfeb242 100644
---- a/sys/arm/ti/usb/omap_ehci.c
-+++ b/sys/arm/ti/usb/omap_ehci.c
-@@ -429,6 +429,7 @@ omap_ehci_init(struct omap_ehci_softc *isc)
+diff --git sys/arm/ti/usb/omap_ehci.c sys/arm/ti/usb/omap_ehci.c
+index 2f35577..2ce579b 100644
+--- sys/arm/ti/usb/omap_ehci.c
++++ sys/arm/ti/usb/omap_ehci.c
+@@ -430,6 +430,7 @@ omap_ehci_init(struct omap_ehci_softc *isc)
  			if (isc->port_mode[0] == EHCI_HCD_OMAP_MODE_PHY) {
  				ti_prcm_clk_set_source(USBP1_PHY_CLK, EXT_CLK);
  				ti_prcm_clk_enable(USBP1_PHY_CLK);
@@ -34,10 +34,10 @@ index e9f080f..cfeb242 100644
  			} else if (isc->port_mode[0] == EHCI_HCD_OMAP_MODE_TLL)
  				ti_prcm_clk_enable(USBP1_UTMI_CLK);
  			else if (isc->port_mode[0] == EHCI_HCD_OMAP_MODE_HSIC)
-diff --git a/sys/boot/fdt/dts/arm/pandaboard.dts b/sys/boot/fdt/dts/arm/pandaboard.dts
+diff --git sys/boot/fdt/dts/arm/pandaboard.dts sys/boot/fdt/dts/arm/pandaboard.dts
 index a4303ad..7a2fa31 100644
---- a/sys/boot/fdt/dts/arm/pandaboard.dts
-+++ b/sys/boot/fdt/dts/arm/pandaboard.dts
+--- sys/boot/fdt/dts/arm/pandaboard.dts
++++ sys/boot/fdt/dts/arm/pandaboard.dts
 @@ -134,7 +134,11 @@
  		ehci {
  			compatible = "ti,usb-ehci", "usb-ehci";
@@ -68,6 +68,3 @@ index a4303ad..7a2fa31 100644
  			reg = < 0x4a064c00 0x100	/* EHCI regs */
  				0x4a064000 0x700	/* UHH regs */
  				0x4a062000 0x1000>;	/* TLL regs */
--- 
-2.1.2
-

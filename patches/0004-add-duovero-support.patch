@@ -1,6 +1,6 @@
-From 772bd750d6029d3481d3317fab676844ba38bcf7 Mon Sep 17 00:00:00 2001
+From b95b54d626a744d8af2201b17baaedd7638fbf48 Mon Sep 17 00:00:00 2001
 From: Scott Ellis <scott@jumpnowtek.com>
-Date: Wed, 31 Dec 2014 03:35:15 -0500
+Date: Mon, 5 Jan 2015 08:06:35 -0500
 Subject: [PATCH] add duovero support
 
 ---
@@ -10,11 +10,11 @@ Subject: [PATCH] add duovero support
  create mode 100644 sys/arm/conf/DUOVERO
  create mode 100644 sys/boot/fdt/dts/arm/duovero.dts
 
-diff --git a/sys/arm/conf/DUOVERO b/sys/arm/conf/DUOVERO
+diff --git sys/arm/conf/DUOVERO sys/arm/conf/DUOVERO
 new file mode 100644
 index 0000000..a9a2453
 --- /dev/null
-+++ b/sys/arm/conf/DUOVERO
++++ sys/arm/conf/DUOVERO
 @@ -0,0 +1,163 @@
 +#
 +# DUOVERO -- Custom configuration for the Gumstix Duovero platform. 
@@ -179,11 +179,11 @@ index 0000000..a9a2453
 +options 	FDT			# Configure using FDT/DTB data
 +options 	FDT_DTB_STATIC
 +makeoptions	FDT_DTS_FILE=duovero.dts
-diff --git a/sys/boot/fdt/dts/arm/duovero.dts b/sys/boot/fdt/dts/arm/duovero.dts
+diff --git sys/boot/fdt/dts/arm/duovero.dts sys/boot/fdt/dts/arm/duovero.dts
 new file mode 100644
 index 0000000..26fc8fa
 --- /dev/null
-+++ b/sys/boot/fdt/dts/arm/duovero.dts
++++ sys/boot/fdt/dts/arm/duovero.dts
 @@ -0,0 +1,270 @@
 +/*-
 + * Copyright (c) 2011 The FreeBSD Foundation
@@ -455,6 +455,3 @@ index 0000000..26fc8fa
 +		stdout = "uart3";
 +	};
 +};
--- 
-2.1.2
-
