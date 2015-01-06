@@ -1,8 +1,6 @@
 ## duovero-freebsd
 
-Last tested with r276693
+FreeBSD patches primarily for Gumstix Duovero integration.
 
-Personal FreeBSD patches.
-
-Primarily for Gumstix Duovero integration.
+Tested with r276748
 

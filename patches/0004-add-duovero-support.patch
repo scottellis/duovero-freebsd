@@ -1,7 +1,7 @@
-From b95b54d626a744d8af2201b17baaedd7638fbf48 Mon Sep 17 00:00:00 2001
+From 03e53556bfd48c9e1c3391c5d108bde14f2185c2 Mon Sep 17 00:00:00 2001
 From: Scott Ellis <scott@jumpnowtek.com>
-Date: Mon, 5 Jan 2015 08:06:35 -0500
-Subject: [PATCH] add duovero support
+Date: Tue, 6 Jan 2015 05:17:23 -0500
+Subject: [PATCH 4/6] add duovero support
 
 ---
  sys/arm/conf/DUOVERO             | 163 +++++++++++++++++++++++

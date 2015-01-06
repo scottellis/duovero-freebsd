@@ -1,14 +1,14 @@
-From 8014d315d35f5918cb9a5712e8eb544469d58980 Mon Sep 17 00:00:00 2001
+From db5474189b0af8e21ad61988c8757661de45cc72 Mon Sep 17 00:00:00 2001
 From: Scott Ellis <scott@jumpnowtek.com>
-Date: Mon, 5 Jan 2015 07:58:54 -0500
-Subject: [PATCH 2/2] ti: ehci: add support for 2 gpio reset pins
+Date: Tue, 6 Jan 2015 05:14:52 -0500
+Subject: [PATCH 2/6] ti: ehci: add support for 2 gpio reset pins
 
 ---
  sys/arm/ti/usb/omap_ehci.c | 66 ++++++++++++++++++++++++++++------------------
  1 file changed, 41 insertions(+), 25 deletions(-)
 
 diff --git sys/arm/ti/usb/omap_ehci.c sys/arm/ti/usb/omap_ehci.c
-index d449bbb..2f35577 100644
+index 3a5e016..f0a1c3e 100644
 --- sys/arm/ti/usb/omap_ehci.c
 +++ sys/arm/ti/usb/omap_ehci.c
 @@ -124,7 +124,7 @@ struct omap_ehci_softc {
@@ -98,7 +98,7 @@ index d449bbb..2f35577 100644
  
  	/* initialise some bus fields */
  	sc->sc_bus.parent = dev;
-@@ -856,25 +865,32 @@ omap_ehci_attach(device_t dev)
+@@ -857,25 +866,32 @@ omap_ehci_attach(device_t dev)
  	for (i = 0; i < 3; i++) {
  		isc->phy_reset[i] = 0;
  		isc->port_mode[i] = EHCI_HCD_OMAP_MODE_UNKNOWN;

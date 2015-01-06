@@ -1,7 +1,7 @@
-From 10ea589e3cc2c5b495ee1718aa8bfbafb54bb048 Mon Sep 17 00:00:00 2001
+From 74bbff2dc0bcb42a8ff5d9442cbf395987e79d3e Mon Sep 17 00:00:00 2001
 From: Scott Ellis <scott@jumpnowtek.com>
-Date: Mon, 5 Jan 2015 08:08:52 -0500
-Subject: [PATCH] omap4: do warm reset on reboot
+Date: Tue, 6 Jan 2015 05:19:27 -0500
+Subject: [PATCH 6/6] omap4: do warm reset on reboot
 
 ---
  sys/arm/ti/omap4/omap4_prcm_clks.c | 2 +-
