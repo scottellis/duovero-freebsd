@@ -12,4 +12,5 @@ patch -p0 -i ${GITDIR}/patches/0003-pandaboard-usb-let-ehci-driver-initialize-us
 patch -p0 -i ${GITDIR}/patches/0004-add-duovero-support.patch
 patch -p0 -i ${GITDIR}/patches/0005-omap4-prcm-use-defined-constants-in-reset-function.patch
 patch -p0 -i ${GITDIR}/patches/0006-omap4-do-warm-reset-on-reboot.patch
+patch -p0 -i ${GITDIR}/patches/0007-omap4-add-omap443x-dtsi.patch
 
