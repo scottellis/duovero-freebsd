@@ -1,20 +1,20 @@
-From bf136232ae182fb046dd3bed5a9ad6d2b23931c0 Mon Sep 17 00:00:00 2001
+From 7ef36faaed589db89a65933ff674c61029f010fa Mon Sep 17 00:00:00 2001
 From: Scott Ellis <scott@jumpnowtek.com>
-Date: Wed, 7 Jan 2015 10:42:32 -0500
-Subject: [PATCH] ARM: Add omap443x.dtsi for pandaboard and duovero
+Date: Tue, 13 Jan 2015 11:21:36 -0500
+Subject: [PATCH] omap4: add omap443x.dtsi
 
 ---
- sys/boot/fdt/dts/arm/duovero.dts    | 204 ++++--------------------------------
- sys/boot/fdt/dts/arm/omap443x.dtsi  | 187 +++++++++++++++++++++++++++++++++
- sys/boot/fdt/dts/arm/pandaboard.dts | 130 ++++-------------------
- 3 files changed, 225 insertions(+), 296 deletions(-)
+ sys/boot/fdt/dts/arm/duovero.dts    | 207 ++++--------------------------------
+ sys/boot/fdt/dts/arm/omap443x.dtsi  | 188 ++++++++++++++++++++++++++++++++
+ sys/boot/fdt/dts/arm/pandaboard.dts | 133 ++++-------------------
+ 3 files changed, 228 insertions(+), 300 deletions(-)
  create mode 100644 sys/boot/fdt/dts/arm/omap443x.dtsi
 
 diff --git sys/boot/fdt/dts/arm/duovero.dts sys/boot/fdt/dts/arm/duovero.dts
-index 26fc8fa..0872028 100644
+index 26fc8fa..e6224c3 100644
 --- sys/boot/fdt/dts/arm/duovero.dts
 +++ sys/boot/fdt/dts/arm/duovero.dts
-@@ -30,20 +30,15 @@
+@@ -30,20 +30,14 @@
  
  /dts-v1/;
  
@@ -30,7 +30,7 @@ index 26fc8fa..0872028 100644
 +	compatible = "gumstix,duovero", "ti,omap4430";
  
  	aliases {
- 		soc = &SOC;
+-		soc = &SOC;
 -		uart1 = &uart1;
 -		uart2 = &uart2;
  		uart3 = &uart3;
@@ -38,7 +38,7 @@ index 26fc8fa..0872028 100644
  	};
  
  	memory {
-@@ -51,101 +46,12 @@
+@@ -51,101 +45,12 @@
  		reg = < 0x80000000 0x40000000 >;	/* 1GB RAM at 0x0 */
  	};
  
@@ -143,7 +143,7 @@ index 26fc8fa..0872028 100644
  				"ag19", "usbb1_ulpiphy_stp", "output",
  				"ae18", "usbb1_ulpiphy_clk", "input_pulldown",
  				"af19", "usbb1_ulpiphy_dir", "input_pulldown",
-@@ -160,107 +66,33 @@
+@@ -160,106 +65,32 @@
  				"ag16", "usbb1_ulpiphy_dat7", "input_pulldown";
  		};
  
@@ -197,8 +197,8 @@ index 26fc8fa..0872028 100644
 +			        0x4a064000 0x700        /* UHH regs */
 +			        0x4a062000 0x1000>;     /* TLL regs */
  			interrupts = <109>;
- 			interrupt-parent = <&GIC>;
- 		};
+-			interrupt-parent = <&GIC>;
+-		};
 -
 -		/*
 -		 * References for i2c values
@@ -259,16 +259,16 @@ index 26fc8fa..0872028 100644
 -			interrupt-parent = <&GIC>;
 -			mmchs-device-id = <1>;
 -			non-removable;
--		};
++			interrupt-parent = <&gic>;
+ 		};
  	};
  
- 	chosen {
 diff --git sys/boot/fdt/dts/arm/omap443x.dtsi sys/boot/fdt/dts/arm/omap443x.dtsi
 new file mode 100644
-index 0000000..10299e1
+index 0000000..743d4b3
 --- /dev/null
 +++ sys/boot/fdt/dts/arm/omap443x.dtsi
-@@ -0,0 +1,187 @@
+@@ -0,0 +1,188 @@
 +/*-
 + * Copyright (c) 2011 The FreeBSD Foundation
 + * All rights reserved.
@@ -303,23 +303,24 @@ index 0000000..10299e1
 +	#address-cells = <1>;
 +	#size-cells = <1>;
 +
-+	interrupt-parent = <&GIC>;
++	compatible = "ti,omap4430", "ti,omap4";
++	interrupt-parent = <&gic>;
 +
-+	SOC: omap4430 {
++	gic: interrupt-controller@48241000 {
++		compatible = "arm,gic";
++		interrupt-controller;
++		#address-cells = <0>;
++		#interrupt-cells = <1>;
++		reg =	< 0x48241000 0x1000 >,	/* Distributor Registers */
++			< 0x48240100 0x0100 >;	/* CPU Interface Registers */
++	};
++
++	soc: omap4430 {
 +		#address-cells = <1>;
 +		#size-cells = <1>;
 +		compatible = "simple-bus";
 +		ranges;
 +		bus-frequency = <0>;
-+
-+		GIC: interrupt-controller@48241000 {
-+			compatible = "arm,gic";
-+			interrupt-controller;
-+			#address-cells = <0>;
-+			#interrupt-cells = <1>;
-+			reg =	< 0x48241000 0x1000 >,	/* Distributor Registers */
-+				< 0x48240100 0x0100 >;	/* CPU Interface Registers */
-+		};
 +
 +		omap4_prcm@4a306000 {
 +	   		compatible = "ti,omap4_prcm";
@@ -333,7 +334,7 @@ index 0000000..10299e1
 +			compatible = "arm,pl310";
 +			reg = < 0x48242000 0x1000 >;
 +			interrupts = < 32 >;
-+			interrupt-parent = < &GIC >;
++			interrupt-parent = < &gic >;
 +		};
 +
 +		mp_tmr@48240200 {
@@ -343,7 +344,7 @@ index 0000000..10299e1
 +			reg =	< 0x48240200 0x100 >, /* Global Timer Registers */
 +				< 0x48240600 0x100 >; /* Private Timer Registers */
 +			interrupts = < 27 29 >;
-+			interrupt-parent = < &GIC >;
++			interrupt-parent = < &gic >;
 +		};
 +
 +		uart3: serial@48020000 {
@@ -351,7 +352,7 @@ index 0000000..10299e1
 +			reg = <0x48020000 0x400>;
 +			reg-shift = <2>;
 +			interrupts = < 106 >;
-+			interrupt-parent = <&GIC>;
++			interrupt-parent = <&gic>;
 +			clock-frequency = <48000000>;
 +			uart-device-id = <2>;
 +		};
@@ -361,7 +362,7 @@ index 0000000..10299e1
 +			reg = <0x4806a000 0x400>;
 +			reg-shift = <2>;
 +			interrupts = < 104 >;
-+			interrupt-parent = <&GIC>;
++			interrupt-parent = <&gic>;
 +			clock-frequency = <48000000>;
 +			uart-device-id = <0>;
 +			status = "disabled";
@@ -372,7 +373,7 @@ index 0000000..10299e1
 +			reg = <0x4806c000 0x400>;
 +			reg-shift = <2>;
 +			interrupts = < 105 >;
-+			interrupt-parent = <&GIC>;
++			interrupt-parent = <&gic>;
 +			clock-frequency = <48000000>;
 +			uart-device-id = <1>;
 +		};
@@ -382,7 +383,7 @@ index 0000000..10299e1
 +			reg = <0x4806e000 0x400>;
 +			reg-shift = <2>;
 +			interrupts = < 102 >;
-+			interrupt-parent = <&GIC>;
++			interrupt-parent = <&gic>;
 +			clock-frequency = <48000000>;
 +			uart-device-id = <3>;
 +			status = "disabled";
@@ -399,14 +400,14 @@ index 0000000..10299e1
 +				0x4805b000 0x1000
 +				0x4805d000 0x1000>;
 +			interrupts = <61 62 63 64 65 66>;
-+			interrupt-parent = <&GIC>;
++			interrupt-parent = <&gic>;
 +		};
 +
 +		i2c1: i2c@48070000 {
 +			compatible = "ti,i2c";
 +			reg = <	0x48070000 0x100 >;
 +			interrupts = <88>;
-+			interrupt-parent = <&GIC>;
++			interrupt-parent = <&gic>;
 +			i2c-device-id = <1>;
 +			clock-frequency = <100000>;
 +		};
@@ -415,7 +416,7 @@ index 0000000..10299e1
 +			compatible = "ti,i2c";
 +			reg = <	0x48072000 0x100 >;
 +			interrupts = <89>;
-+			interrupt-parent = <&GIC>;
++			interrupt-parent = <&gic>;
 +			i2c-device-id = <2>;
 +			clock-frequency = <400000>;
 +		};
@@ -424,7 +425,7 @@ index 0000000..10299e1
 +			compatible = "ti,i2c";
 +			reg = <	0x48060000 0x100 >;
 +			interrupts = <93>;
-+			interrupt-parent = <&GIC>;
++			interrupt-parent = <&gic>;
 +			i2c-device-id = <3>;
 +			clock-frequency = <100000>;
 +		};
@@ -433,7 +434,7 @@ index 0000000..10299e1
 +			compatible = "ti,i2c";
 +			reg = <	0x48350000 0x100 >;
 +			interrupts = <95>;
-+			interrupt-parent = <&GIC>;
++			interrupt-parent = <&gic>;
 +			i2c-device-id = <4>;
 +			clock-frequency = <100000>;
 +		};
@@ -442,14 +443,14 @@ index 0000000..10299e1
 +			compatible = "ti,sdma";
 +			reg = <	0x4A056000 0x1000 >;
 +			interrupts = <44 45 46 47>;
-+			interrupt-parent = <&GIC>;
++			interrupt-parent = <&gic>;
 +		};
 +
 +		mmc@x4809C000 {
 +			compatible = "ti,mmchs";
 +			reg = <0x4809C000 0x1000 >;
 +			interrupts = <115>;
-+			interrupt-parent = <&GIC>;
++			interrupt-parent = <&gic>;
 +			mmchs-device-id = <1>;
 +			non-removable;
 +		};
@@ -457,10 +458,10 @@ index 0000000..10299e1
 +
 +};
 diff --git sys/boot/fdt/dts/arm/pandaboard.dts sys/boot/fdt/dts/arm/pandaboard.dts
-index 7a2fa31..f870dbd 100644
+index 7a2fa31..95bf804 100644
 --- sys/boot/fdt/dts/arm/pandaboard.dts
 +++ sys/boot/fdt/dts/arm/pandaboard.dts
-@@ -30,13 +30,11 @@
+@@ -30,16 +30,13 @@
  
  /dts-v1/;
  
@@ -476,8 +477,11 @@ index 7a2fa31..f870dbd 100644
 +	compatible = "ti,pandaboard", "ti,omap4430";
  
  	aliases {
- 		soc = &SOC;
-@@ -48,61 +46,12 @@
+-		soc = &SOC;
+ 		uart3 = &uart3;
+ 	};
+ 
+@@ -48,61 +45,12 @@
  		reg = < 0x80000000 0x40000000 >;	/* 1GB RAM at 0x0 */
  	};
  
@@ -542,7 +546,7 @@ index 7a2fa31..f870dbd 100644
  				"ag19", "usbb1_ulpiphy_stp", "output",
  				"ae18", "usbb1_ulpiphy_clk", "input_pulldown",
  				"af19", "usbb1_ulpiphy_dir", "input_pulldown",
-@@ -117,72 +66,33 @@
+@@ -117,72 +65,33 @@
  				"ag16", "usbb1_ulpiphy_dat7", "input_pulldown";
  		};
  
@@ -599,8 +603,8 @@ index 7a2fa31..f870dbd 100644
 +			        0x4a064000 0x700        /* UHH regs */
 +			        0x4a062000 0x1000>;     /* TLL regs */
  			interrupts = <109>;
- 			interrupt-parent = <&GIC>;
- 		};
+-			interrupt-parent = <&GIC>;
+-		};
 -
 -		I2C1: i2c@x48070000 {
 -			compatible = "ti,i2c";
@@ -608,7 +612,8 @@ index 7a2fa31..f870dbd 100644
 -			interrupts = <88>;
 -			interrupt-parent = <&GIC>;
 -			i2c-device-id = <1>;
--		};
++			interrupt-parent = <&gic>;
+ 		};
 -
 -		sdma@x48070000 {
 -			compatible = "ti,sdma";
