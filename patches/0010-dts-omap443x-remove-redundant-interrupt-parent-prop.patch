@@ -1,0 +1,113 @@
+From 2bde317ee4aed404986293ffa822235dfdd9abf3 Mon Sep 17 00:00:00 2001
+From: Scott Ellis <scott@jumpnowtek.com>
+Date: Wed, 14 Jan 2015 15:56:41 -0500
+Subject: [PATCH 3/3] dts: omap443x: Remove redundant interupt-parent props
+
+---
+ sys/boot/fdt/dts/arm/omap443x.dtsi | 14 --------------
+ 1 file changed, 14 deletions(-)
+
+diff --git sys/boot/fdt/dts/arm/omap443x.dtsi sys/boot/fdt/dts/arm/omap443x.dtsi
+index 80b54cf..be74dec 100644
+--- sys/boot/fdt/dts/arm/omap443x.dtsi
++++ sys/boot/fdt/dts/arm/omap443x.dtsi
+@@ -73,7 +73,6 @@
+ 			reg =	< 0x48240200 0x100 >, /* Global Timer Registers */
+ 				< 0x48240600 0x100 >; /* Private Timer Registers */
+ 			interrupts = < 27 29 >;
+-			interrupt-parent = < &gic >;
+ 		};
+ 
+ 		uart3: serial@48020000 {
+@@ -81,7 +80,6 @@
+ 			reg = <0x48020000 0x400>;
+ 			reg-shift = <2>;
+ 			interrupts = < 106 >;
+-			interrupt-parent = <&gic>;
+ 			clock-frequency = <48000000>;
+ 			uart-device-id = <2>;
+ 		};
+@@ -91,10 +89,8 @@
+ 			reg = <0x4806a000 0x400>;
+ 			reg-shift = <2>;
+ 			interrupts = < 104 >;
+-			interrupt-parent = <&gic>;
+ 			clock-frequency = <48000000>;
+ 			uart-device-id = <0>;
+-			status = "disabled";
+ 		};
+ 
+ 		uart2: serial@4806c000 {
+@@ -102,7 +98,6 @@
+ 			reg = <0x4806c000 0x400>;
+ 			reg-shift = <2>;
+ 			interrupts = < 105 >;
+-			interrupt-parent = <&gic>;
+ 			clock-frequency = <48000000>;
+ 			uart-device-id = <1>;
+ 		};
+@@ -112,10 +107,8 @@
+ 			reg = <0x4806e000 0x400>;
+ 			reg-shift = <2>;
+ 			interrupts = < 102 >;
+-			interrupt-parent = <&gic>;
+ 			clock-frequency = <48000000>;
+ 			uart-device-id = <3>;
+-			status = "disabled";
+ 		};
+ 
+ 		GPIO: gpio {
+@@ -129,14 +122,12 @@
+ 				0x4805b000 0x1000
+ 				0x4805d000 0x1000>;
+ 			interrupts = <61 62 63 64 65 66>;
+-			interrupt-parent = <&gic>;
+ 		};
+ 
+ 		i2c1: i2c@48070000 {
+ 			compatible = "ti,i2c";
+ 			reg = <	0x48070000 0x100 >;
+ 			interrupts = <88>;
+-			interrupt-parent = <&gic>;
+ 			i2c-device-id = <1>;
+ 			clock-frequency = <100000>;
+ 		};
+@@ -145,7 +136,6 @@
+ 			compatible = "ti,i2c";
+ 			reg = <	0x48072000 0x100 >;
+ 			interrupts = <89>;
+-			interrupt-parent = <&gic>;
+ 			i2c-device-id = <2>;
+ 			clock-frequency = <400000>;
+ 		};
+@@ -154,7 +144,6 @@
+ 			compatible = "ti,i2c";
+ 			reg = <	0x48060000 0x100 >;
+ 			interrupts = <93>;
+-			interrupt-parent = <&gic>;
+ 			i2c-device-id = <3>;
+ 			clock-frequency = <100000>;
+ 		};
+@@ -163,7 +152,6 @@
+ 			compatible = "ti,i2c";
+ 			reg = <	0x48350000 0x100 >;
+ 			interrupts = <95>;
+-			interrupt-parent = <&gic>;
+ 			i2c-device-id = <4>;
+ 			clock-frequency = <100000>;
+ 		};
+@@ -172,14 +160,12 @@
+ 			compatible = "ti,sdma";
+ 			reg = <	0x4A056000 0x1000 >;
+ 			interrupts = <44 45 46 47>;
+-			interrupt-parent = <&gic>;
+ 		};
+ 
+ 		mmc@x4809C000 {
+ 			compatible = "ti,mmchs";
+ 			reg = <0x4809C000 0x1000 >;
+ 			interrupts = <115>;
+-			interrupt-parent = <&gic>;
+ 			mmchs-device-id = <1>;
+ 			non-removable;
+ 		};
