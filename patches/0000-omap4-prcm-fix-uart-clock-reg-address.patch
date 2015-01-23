@@ -1,0 +1,25 @@
+From 7ae8940978882f96fda2e16e6d272e2f239ac697 Mon Sep 17 00:00:00 2001
+From: Scott Ellis <scott@jumpnowtek.com>
+Date: Fri, 23 Jan 2015 10:36:19 -0500
+Subject: [PATCH] omap4: prcm: fix uart3 and uart4 clock register addresses
+
+---
+ sys/arm/ti/omap4/omap4_prcm_clks.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git sys/arm/ti/omap4/omap4_prcm_clks.c sys/arm/ti/omap4/omap4_prcm_clks.c
+index de0eff6..10fab74 100644
+--- sys/arm/ti/omap4/omap4_prcm_clks.c
++++ sys/arm/ti/omap4/omap4_prcm_clks.c
+@@ -368,9 +368,9 @@ static struct omap4_clk_details g_omap4_clk_details[] = {
+ 	OMAP4_GENERIC_CLOCK_DETAILS(UART2_CLK, FREQ_48MHZ, CM2_INSTANCE_MEM_REGION,
+ 		(L4PER_CM2_OFFSET + 0x0148), CLKCTRL_MODULEMODE_ENABLE),
+ 	OMAP4_GENERIC_CLOCK_DETAILS(UART3_CLK, FREQ_48MHZ, CM2_INSTANCE_MEM_REGION,
+-		(L4PER_CM2_OFFSET + 0x0140), CLKCTRL_MODULEMODE_ENABLE),
++		(L4PER_CM2_OFFSET + 0x0150), CLKCTRL_MODULEMODE_ENABLE),
+ 	OMAP4_GENERIC_CLOCK_DETAILS(UART4_CLK, FREQ_48MHZ, CM2_INSTANCE_MEM_REGION,
+-		(L4PER_CM2_OFFSET + 0x0148), CLKCTRL_MODULEMODE_ENABLE),
++		(L4PER_CM2_OFFSET + 0x0158), CLKCTRL_MODULEMODE_ENABLE),
+ 
+ 	/* General purpose timers */
+ 	OMAP4_GENERIC_CLOCK_DETAILS(GPTIMER1_CLK,  -1, PRM_INSTANCE_MEM_REGION,
