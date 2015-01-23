@@ -1,273 +1,19 @@
-From a4925de226789d7ac8b1f8e905472845373fa73b Mon Sep 17 00:00:00 2001
+From a69b975cd625211311f7a434b4ce39c7607b8fda Mon Sep 17 00:00:00 2001
 From: Scott Ellis <scott@jumpnowtek.com>
-Date: Sat, 17 Jan 2015 07:20:29 -0500
-Subject: [PATCH] omap4: add omap443x dtsi
+Date: Fri, 23 Jan 2015 15:58:53 -0500
+Subject: [PATCH 1/2] dts: omap4: add omap443x dtsi
 
 ---
- sys/boot/fdt/dts/arm/duovero.dts    | 206 ++++--------------------------------
- sys/boot/fdt/dts/arm/omap443x.dtsi  | 174 ++++++++++++++++++++++++++++++
- sys/boot/fdt/dts/arm/pandaboard.dts | 132 ++++-------------------
- 3 files changed, 212 insertions(+), 300 deletions(-)
+ sys/boot/fdt/dts/arm/omap443x.dtsi | 172 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 172 insertions(+)
  create mode 100644 sys/boot/fdt/dts/arm/omap443x.dtsi
 
-diff --git sys/boot/fdt/dts/arm/duovero.dts sys/boot/fdt/dts/arm/duovero.dts
-index 26fc8fa..cea609a 100644
---- sys/boot/fdt/dts/arm/duovero.dts
-+++ sys/boot/fdt/dts/arm/duovero.dts
-@@ -30,20 +30,14 @@
- 
- /dts-v1/;
- 
-+/include/ "omap443x.dtsi"
-+
- / {
- 	model = "duovero";
--	compatible = "duovero", "ti,omap4430";
--	#address-cells = <1>;
--	#size-cells = <1>;
--
--	interrupt-parent = <&GIC>;
-+	compatible = "gumstix,duovero", "ti,omap4430";
- 
- 	aliases {
--		soc = &SOC;
--		uart1 = &uart1;
--		uart2 = &uart2;
- 		uart3 = &uart3;
--		uart4 = &uart4;
- 	};
- 
- 	memory {
-@@ -51,101 +45,12 @@
- 		reg = < 0x80000000 0x40000000 >;	/* 1GB RAM at 0x0 */
- 	};
- 
--	SOC: omap4430 {
--		#address-cells = <1>;
--		#size-cells = <1>;
--		compatible = "simple-bus";
--		ranges;
--		bus-frequency = <0>;
--
--		GIC: interrupt-controller@48241000 {
--			compatible = "arm,gic";
--			interrupt-controller;
--			#address-cells = <0>;
--			#interrupt-cells = <1>;
--			reg =	< 0x48241000 0x1000 >,	/* Distributor Registers */
--				< 0x48240100 0x0100 >;	/* CPU Interface Registers */
--		};
--
--		omap4_prcm@4a306000 {
--	   		compatible = "ti,omap4_prcm";
--   			reg = < 0x4a306000 0x2000
--				0x4a004000 0x1000
--				0x4a008000 0x8000
--				0x4a30a000 0x0600 >;
--		};
--				     
--		pl310@48242000 {
--			compatible = "arm,pl310";
--			reg = < 0x48242000 0x1000 >;
--			interrupts = < 32 >;
--			interrupt-parent = < &GIC >;
--		};
--
--		mp_tmr@48240200 {
--			compatible = "arm,mpcore-timers";
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg =	< 0x48240200 0x100 >, /* Global Timer Registers */
--				< 0x48240600 0x100 >; /* Private Timer Registers */
--			interrupts = < 27 29 >;
--			interrupt-parent = < &GIC >;
--		};
--
--		/*
--		 * References for uart values
--		 * reg: table 23-165
--		 * interrupts: table 17-2, MA_IRQ_XX + 32, why 32?
--		 * clock-frequency: section 23.3.1.1
--		 */
--
--		uart3: serial@48020000 {
--			compatible = "ti,ns16550";
--			reg = <0x48020000 0x400>;
--			reg-shift = <2>;
--			interrupts = < 106 >;
--			interrupt-parent = <&GIC>;
--			clock-frequency = <48000000>;
--			uart-device-id = <2>;
--		};
--
--		uart1: serial@4806a000 {
--			compatible = "ti,ns16550";
--			reg = <0x4806a000 0x400>;
--			reg-shift = <2>;
--			interrupts = < 104 >;
--			interrupt-parent = <&GIC>;
--			clock-frequency = <48000000>;
--			uart-device-id = <0>;
--			status = "disabled";
--		};
--
--		uart2: serial@4806c000 {
--			compatible = "ti,ns16550";
--			reg = <0x4806c000 0x400>;
--			reg-shift = <2>;
--			interrupts = < 105 >;
--			interrupt-parent = <&GIC>;
--			clock-frequency = <48000000>;
--			uart-device-id = <1>;
--		};
--		
--		uart4: serial@4806e000 {
--			compatible = "ti,ns16550";
--			reg = <0x4806e000 0x400>;
--			reg-shift = <2>;
--			interrupts = < 102 >;
--			interrupt-parent = <&GIC>;
--			clock-frequency = <48000000>;
--			uart-device-id = <3>;
--			status = "disabled";
--		};
--
-+	omap4430 {
- 		scm@4a100000 {
- 			compatible = "ti,scm";
--			reg =	< 0x4a100000 0x1000 >;
-+			reg = < 0x4a100000 0x1000 >;
- 			/* Set of triplets < padname, muxname, padstate> */
--			scm-pad-config = 
-+			scm-pad-config =
- 				"ag19", "usbb1_ulpiphy_stp", "output",
- 				"ae18", "usbb1_ulpiphy_clk", "input_pulldown",
- 				"af19", "usbb1_ulpiphy_dir", "input_pulldown",
-@@ -160,106 +65,31 @@
- 				"ag16", "usbb1_ulpiphy_dat7", "input_pulldown";
- 		};
- 
--		GPIO: gpio {
--			#gpio-cells = <3>;
--			compatible = "ti,gpio";
--			gpio-controller;
--			reg =<	0x4a310000 0x1000
--				0x48055000 0x1000
--				0x48057000 0x1000
--				0x48059000 0x1000
--				0x4805b000 0x1000
--				0x4805d000 0x1000>;
--			interrupts = <61 62 63 64 65 66>;
--			interrupt-parent = <&GIC>;
--		};
--
- 		ehci {
- 			compatible = "ti,usb-ehci", "usb-ehci";
--			/* 
-+			/*
- 			 * USB port PHY configuration is a tuple consisting of either
--	                 * <mode, reset, gpio_pin>
--	                 * or
--	                 * <mode, reset, gpio_pin1, gpio_pin2>
--	                 *
-+			 * <mode, reset, gpio_pin>
-+			 * or
-+			 * <mode, reset, gpio_pin1, gpio_pin2>
-+			 *
- 			 * mode is one of the following values:
- 			 *   0 - unknown
- 			 *   1 - PHY
- 			 *   2 - TLL
- 			 *   3 - HSIC
- 			 *
--			 * reset indicates (if non-zero) if port reset is required 
-+			 * reset indicates (if non-zero) if port reset is required
- 			 * gpio_pin - GPIO pin(s) that is used to perform reset
-+			 * the duovero uses 1 reset pin
- 			 */
- 			phy-config = < 1 1 62
--	                               0 0 0
--	                               0 0 0 >;
--			reg = < 0x4a064c00 0x100	/* EHCI regs */
--				0x4a064000 0x700	/* UHH regs */
--				0x4a062000 0x1000>;	/* TLL regs */
-+			               0 0 0
-+			               0 0 0 >;
-+			reg = < 0x4a064c00 0x100        /* EHCI regs */
-+			        0x4a064000 0x700        /* UHH regs */
-+			        0x4a062000 0x1000>;     /* TLL regs */
- 			interrupts = <109>;
--			interrupt-parent = <&GIC>;
--		};
--
--		/*
--		 * References for i2c values
--		 * reg: table 23-30
--		 * interrupts: table 17-2, MA_IRQ_XX + 32
--                 * Only i2c2 and i2c3 are brought out on the Duovero COM
--		 * Only i2c2 is available on the Parlor expansion
--		 * Both are available on the Chateau expansion
--		 */
--
--		i2c1: i2c@48070000 {
--			compatible = "ti,i2c";
--			reg = <	0x48070000 0x100 >;
--			interrupts = <88>;
--			interrupt-parent = <&GIC>;
--			i2c-device-id = <1>;
--			clock-frequency = <100000>;
--		};
--
--		i2c2: i2c@48072000 {
--			compatible = "ti,i2c";
--			reg = <	0x48072000 0x100 >;
--			interrupts = <89>;
--			interrupt-parent = <&GIC>;
--			i2c-device-id = <2>;
--			clock-frequency = <400000>;
--		};
--
--		i2c3: i2c@48060000 {
--			compatible = "ti,i2c";
--			reg = <	0x48060000 0x100 >;
--			interrupts = <93>;
--			interrupt-parent = <&GIC>;
--			i2c-device-id = <3>;
--			clock-frequency = <100000>;
--		};
--
--		i2c4: i2c@48350000 {
--			compatible = "ti,i2c";
--			reg = <	0x48350000 0x100 >;
--			interrupts = <95>;
--			interrupt-parent = <&GIC>;
--			i2c-device-id = <4>;
--			clock-frequency = <100000>;
--		};
--
--		sdma@x48070000 {
--			compatible = "ti,sdma";
--			reg = <	0x4A056000 0x1000 >;
--			interrupts = <44 45 46 47>;
--			interrupt-parent = <&GIC>;
--		};
--
--		mmc@x4809C000 {
--			compatible = "ti,mmchs";
--			reg = <0x4809C000 0x1000 >;
--			interrupts = <115>;
--			interrupt-parent = <&GIC>;
--			mmchs-device-id = <1>;
--			non-removable;
- 		};
- 	};
- 
 diff --git sys/boot/fdt/dts/arm/omap443x.dtsi sys/boot/fdt/dts/arm/omap443x.dtsi
 new file mode 100644
-index 0000000..9b95cec
+index 0000000..409e13f
 --- /dev/null
 +++ sys/boot/fdt/dts/arm/omap443x.dtsi
-@@ -0,0 +1,174 @@
+@@ -0,0 +1,172 @@
 +/*-
 + * Copyright (c) 2011 The FreeBSD Foundation
 + * All rights reserved.
@@ -299,7 +45,6 @@ index 0000000..9b95cec
 + */
 +
 +/ {
-+	/* these come from skeleton.dtsi in Linux omap4.dtsi */
 +	#address-cells = <1>;
 +	#size-cells = <1>;
 +
@@ -330,73 +75,79 @@ index 0000000..9b95cec
 +
 +		omap4_prcm@4a306000 {
 +	   		compatible = "ti,omap4_prcm";
-+   			reg = < 0x4a306000 0x2000
-+				0x4a004000 0x1000
-+				0x4a008000 0x8000
-+				0x4a30a000 0x0600 >;
++   			reg = <0x4a306000 0x2000
++			       0x4a004000 0x1000
++			       0x4a008000 0x2000
++			       0x4a30a000 0x0520>;
 +		};
 +				     
 +		mp_tmr@48240200 {
 +			compatible = "arm,mpcore-timers";
 +			#address-cells = <1>;
 +			#size-cells = <0>;
-+			reg =	< 0x48240200 0x100 >, /* Global Timer Registers */
-+				< 0x48240600 0x100 >; /* Private Timer Registers */
-+			interrupts = < 27 29 >;
++			reg = <0x48240200 0x100>,
++			      <0x48240600 0x100>;
++			interrupts = <27 29>;
++		};
++
++		sdma: dma-controller@x4a056000 {
++			compatible = "ti,omap4430-sdma", "ti,sdma";
++			reg = <0x4A056000 0x1000>;
++			interrupts = <44 45 46 47>;
++		};
++
++		GPIO: gpio {
++			#gpio-cells = <3>;
++			compatible = "ti,omap4-gpio";
++			gpio-controller;
++			reg = <0x4a310000 0x1000
++			       0x48055000 0x1000
++			       0x48057000 0x1000
++			       0x48059000 0x1000
++			       0x4805b000 0x1000
++			       0x4805d000 0x1000>;
++			interrupts = <61 62 63 64 65 66>;
 +		};
 +
 +		uart3: serial@48020000 {
 +			compatible = "ti,omap4-uart", "ti,ns16550";
 +			reg = <0x48020000 0x400>;
 +			reg-shift = <2>;
-+			interrupts = < 106 >;
++			interrupts = <106>;
 +			clock-frequency = <48000000>;
-+			uart-device-id = <2>;
++			uart-device-id = <3>;
 +		};
 +
 +		uart1: serial@4806a000 {
 +			compatible = "ti,omap4-uart", "ti,ns16550";
 +			reg = <0x4806a000 0x400>;
 +			reg-shift = <2>;
-+			interrupts = < 104 >;
++			interrupts = <104>;
 +			clock-frequency = <48000000>;
-+			uart-device-id = <0>;
++			uart-device-id = <1>;
 +		};
 +
 +		uart2: serial@4806c000 {
 +			compatible = "ti,omap4-uart", "ti,ns16550";
 +			reg = <0x4806c000 0x400>;
 +			reg-shift = <2>;
-+			interrupts = < 105 >;
++			interrupts = <105>;
 +			clock-frequency = <48000000>;
-+			uart-device-id = <1>;
++			uart-device-id = <2>;
 +		};
 +		
 +		uart4: serial@4806e000 {
 +			compatible = "ti,omap4-uart", "ti,ns16550";
 +			reg = <0x4806e000 0x400>;
 +			reg-shift = <2>;
-+			interrupts = < 102 >;
++			interrupts = <102>;
 +			clock-frequency = <48000000>;
-+			uart-device-id = <3>;
-+		};
-+
-+		GPIO: gpio {
-+			#gpio-cells = <3>;
-+			compatible = "ti,omap4-gpio", "ti,gpio";
-+			gpio-controller;
-+			reg =<	0x4a310000 0x1000
-+				0x48055000 0x1000
-+				0x48057000 0x1000
-+				0x48059000 0x1000
-+				0x4805b000 0x1000
-+				0x4805d000 0x1000>;
-+			interrupts = <61 62 63 64 65 66>;
++			uart-device-id = <4>;
 +		};
 +
 +		i2c1: i2c@48070000 {
 +			compatible = "ti,omap4-i2c", "ti,i2c";
-+			reg = <	0x48070000 0x100 >;
++			reg = <0x48070000 0x100>;
 +			interrupts = <88>;
 +			i2c-device-id = <1>;
 +			clock-frequency = <100000>;
@@ -404,7 +155,7 @@ index 0000000..9b95cec
 +
 +		i2c2: i2c@48072000 {
 +			compatible = "ti,omap4-i2c", "ti,i2c";
-+			reg = <	0x48072000 0x100 >;
++			reg = <0x48072000 0x100>;
 +			interrupts = <89>;
 +			i2c-device-id = <2>;
 +			clock-frequency = <400000>;
@@ -412,7 +163,7 @@ index 0000000..9b95cec
 +
 +		i2c3: i2c@48060000 {
 +			compatible = "ti,omap4-i2c", "ti,i2c";
-+			reg = <	0x48060000 0x100 >;
++			reg = <0x48060000 0x100>;
 +			interrupts = <93>;
 +			i2c-device-id = <3>;
 +			clock-frequency = <100000>;
@@ -420,16 +171,10 @@ index 0000000..9b95cec
 +
 +		i2c4: i2c@48350000 {
 +			compatible = "ti,omap4-i2c", "ti,i2c";
-+			reg = <	0x48350000 0x100 >;
++			reg = <0x48350000 0x100>;
 +			interrupts = <95>;
 +			i2c-device-id = <4>;
 +			clock-frequency = <100000>;
-+		};
-+
-+		sdma: dma-controller@x4a056000 {
-+			compatible = "ti,omap4430-sdma", "ti,sdma";
-+			reg = <0x4A056000 0x1000>;
-+			interrupts = <44 45 46 47>;
 +		};
 +
 +		mmc1: mmc@x4809C000 {
@@ -440,181 +185,4 @@ index 0000000..9b95cec
 +			non-removable;
 +		};
 +	};
-+
 +};
-diff --git sys/boot/fdt/dts/arm/pandaboard.dts sys/boot/fdt/dts/arm/pandaboard.dts
-index 7a2fa31..e3fadd9 100644
---- sys/boot/fdt/dts/arm/pandaboard.dts
-+++ sys/boot/fdt/dts/arm/pandaboard.dts
-@@ -30,16 +30,13 @@
- 
- /dts-v1/;
- 
-+/include/ "omap443x.dtsi"
-+
- / {
- 	model = "pandaboard";
--	compatible = "pandaboard", "ti,omap4430";
--	#address-cells = <1>;
--	#size-cells = <1>;
--
--	interrupt-parent = <&GIC>;
-+	compatible = "ti,pandaboard", "ti,omap4430";
- 
- 	aliases {
--		soc = &SOC;
- 		uart3 = &uart3;
- 	};
- 
-@@ -48,61 +45,12 @@
- 		reg = < 0x80000000 0x40000000 >;	/* 1GB RAM at 0x0 */
- 	};
- 
--	SOC: omap4430 {
--		#address-cells = <1>;
--		#size-cells = <1>;
--		compatible = "simple-bus";
--		ranges;
--		bus-frequency = <0>;
--
--		GIC: interrupt-controller@48241000 {
--			compatible = "arm,gic";
--			interrupt-controller;
--			#address-cells = <0>;
--			#interrupt-cells = <1>;
--			reg =	< 0x48241000 0x1000 >,	/* Distributor Registers */
--				< 0x48240100 0x0100 >;	/* CPU Interface Registers */
--		};
--
--		omap4_prcm@4a306000 {
--	   		compatible = "ti,omap4_prcm";
--			reg = < 0x4a306000 0x2000
--			        0x4a004000 0x1000
--			        0x4a008000 0x8000
--	                        0x4a30a000 0x0600 >;
--		};
--
--		pl310@48242000 {
--			compatible = "arm,pl310";
--			reg = < 0x48242000 0x1000 >;
--			interrupts = < 32 >;
--			interrupt-parent = < &GIC >;
--		};
--		mp_tmr@48240200 {
--			compatible = "arm,mpcore-timers";
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg =	< 0x48240200 0x100 >, /* Global Timer Registers */
--				< 0x48240600 0x100 >; /* Private Timer Registers */
--			interrupts = < 27 29 >;
--			interrupt-parent = < &GIC >;
--		};
--
--		uart3: serial@48020000 {
--			compatible = "ns16550";
--			reg = <0x48020000 0x1000>;
--			reg-shift = <2>;
--			interrupts = < 106 >;
--			interrupt-parent = <&GIC>;
--			clock-frequency = < 48000000 >; /* 48Mhz clock for all uarts */
--							/* (techref 17.3.1.1) */
--		};
--
-+	omap4430 {
- 		scm@4a100000 {
- 			compatible = "ti,scm";
--			reg =	< 0x4a100000 0x1000 >;
-+			reg = < 0x4a100000 0x1000 >;
- 			/* Set of triplets < padname, muxname, padstate> */
--			scm-pad-config = 
-+			scm-pad-config =
- 				"ag19", "usbb1_ulpiphy_stp", "output",
- 				"ae18", "usbb1_ulpiphy_clk", "input_pulldown",
- 				"af19", "usbb1_ulpiphy_dir", "input_pulldown",
-@@ -117,72 +65,32 @@
- 				"ag16", "usbb1_ulpiphy_dat7", "input_pulldown";
- 		};
- 
--		GPIO: gpio {
--			#gpio-cells = <3>;
--			compatible = "ti,gpio";
--			gpio-controller;
--			reg =<	0x4a310000 0x1000
--				0x48055000 0x1000
--				0x48057000 0x1000
--				0x48059000 0x1000
--				0x4805b000 0x1000
--				0x4805d000 0x1000>;
--			interrupts = <61 62 63 64 65 66>;
--			interrupt-parent = <&GIC>;
--		};
--
- 		ehci {
- 			compatible = "ti,usb-ehci", "usb-ehci";
--			/* 
--	                 * USB port PHY configuration is a tuple consisting of either
--	                 * <mode, reset, gpio_pin>
--	                 * or
--	                 * <mode, reset, gpio_pin1, gpio_pin2>
--	                 *
-+			/*
-+			 * USB port PHY configuration is a tuple consisting of either
-+			 * <mode, reset, gpio_pin>
-+			 * or
-+			 * <mode, reset, gpio_pin1, gpio_pin2>
-+			 *
- 			 * mode is one of the following values:
- 			 *   0 - unknown
- 			 *   1 - PHY
- 			 *   2 - TLL
- 			 *   3 - HSIC
- 			 *
--			 * reset indicates (if non-zero) if port reset is required 
--			 * gpio_pin - GPIO pin(s) that is used to perform reset
--	                 * the pandaboard uses 2 reset pins
-+			 * reset indicates (if non-zero) if port reset is required
-+ 			 * gpio_pin - GPIO pin(s) that is used to perform reset
-+			 * the pandaboard uses 2 reset pins
- 			 */
- 			phy-config = < 1 1 62 1
--	                               0 0 0 0
--	                               0 0 0 0 >;
--			reg = < 0x4a064c00 0x100	/* EHCI regs */
--				0x4a064000 0x700	/* UHH regs */
--				0x4a062000 0x1000>;	/* TLL regs */
-+			               0 0 0 0
-+			               0 0 0 0 >;
-+			reg = < 0x4a064c00 0x100        /* EHCI regs */
-+			        0x4a064000 0x700        /* UHH regs */
-+			        0x4a062000 0x1000>;     /* TLL regs */
- 			interrupts = <109>;
--			interrupt-parent = <&GIC>;
--		};
--
--		I2C1: i2c@x48070000 {
--			compatible = "ti,i2c";
--			reg =<	0x48070000 0x100 >;
--			interrupts = <88>;
--			interrupt-parent = <&GIC>;
--			i2c-device-id = <1>;
- 		};
--
--		sdma@x48070000 {
--			compatible = "ti,sdma";
--			reg =<	0x4A056000 0x1000 >;
--			interrupts = <44 45 46 47>;
--			interrupt-parent = <&GIC>;
--		};
--
--		mmc@x4809C000 {
--			compatible = "ti,mmchs";
--			reg =<0x4809C000 0x1000 >;
--			interrupts = <115>;
--			interrupt-parent = <&GIC>;
--			mmchs-device-id = <1>;
--			non-removable; /* XXX need real solution */
--		};
--
- 	};
- 
- 	chosen {
