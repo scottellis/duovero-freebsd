@@ -2,5 +2,11 @@
 
 FreeBSD patches primarily for Gumstix Duovero integration.
 
-Tested with r277692
+I'm only testing on *CURRENT*.
+
+Last revision tested was *r277692*
+
+The u-boot ports are for *CURRENT* as well. 
+
+Copy the directories to `ports/sysutils`.
 
